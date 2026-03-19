@@ -1,0 +1,152 @@
+@model DerivAI.Web.Models.BreakAnalysisViewModel
+@{
+    ViewData["Title"] = "AI Break Analysis";
+    ViewData["Subtitle"] = $"Claude Sonnet analysis for {Model.TradeId}";
+}
+
+<div class="row">
+    <div class="col-12">
+        
+        <!-- Analysis Summary Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-success text-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-cpu-fill me-2"></i>AI Analysis Complete
+                </h5>
+                <small>Powered by Claude Sonnet via Amazon Bedrock</small>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">Trade ID</label>
+                        <div class="fw-medium"><code class="text-primary">@Model.TradeId</code></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">Discrepancies</label>
+                        <div class="fw-medium">@Model.AnalysisResult.DiscrepancyCount</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">Severity</label>
+                        <div><span class="@Model.AnalysisResult.SeverityBadgeClass">@Model.AnalysisResult.Severity</span></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">Processing Time</label>
+                        <div class="fw-medium">@Model.AnalysisResult.ProcessingTimeMs ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Break Explanation -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-lightbulb me-2 text-warning"></i>Break Explanation
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-light border">
+                    <p class="mb-0" style="white-space: pre-wrap;">@Model.AnalysisResult.BreakExplanation</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resolution Steps -->
+        @if (Model.AnalysisResult.ResolutionSteps.Any())
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-list-check me-2 text-success"></i>Recommended Resolution Steps
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        @foreach (var step in Model.AnalysisResult.ResolutionSteps)
+                        {
+                            <li class="mb-2">@step</li>
+                        }
+                    </ol>
+                </div>
+            </div>
+        }
+
+        <!-- Audit Trail -->
+        @if (Model.AnalysisResult.AuditTrail.Any())
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-clock-history me-2 text-info"></i>Processing Audit Trail
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var entry in Model.AnalysisResult.AuditTrail)
+                        {
+                            <li class="mb-1">
+                                <small class="text-muted font-monospace">@entry</small>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <!-- Confirmation Details (Collapsed) -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">
+                    <button class="btn btn-link text-decoration-none p-0 fw-bold" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#confirmationDetails">
+                        <i class="bi bi-chevron-down me-2"></i>View Confirmation Details
+                    </button>
+                </h5>
+            </div>
+            <div class="collapse" id="confirmationDetails">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary mb-3">Our Confirmation</h6>
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr><th>Notional</th><td>@Model.OurConfirmation.Notional.ToString("N0") @Model.OurConfirmation.Currency</td></tr>
+                                    <tr><th>Fixed Rate</th><td>@Model.OurConfirmation.FixedRate%</td></tr>
+                                    <tr><th>Payment Freq</th><td>@Model.OurConfirmation.PaymentFrequency</td></tr>
+                                    <tr><th>Day Count</th><td>@Model.OurConfirmation.DayCountConvention</td></tr>
+                                    <tr><th>Maturity</th><td>@Model.OurConfirmation.MaturityDate.ToString("yyyy-MM-dd")</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-secondary mb-3">Counterparty Confirmation</h6>
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr><th>Notional</th><td>@Model.CptyConfirmation.Notional.ToString("N0") @Model.CptyConfirmation.Currency</td></tr>
+                                    <tr><th>Fixed Rate</th><td>@Model.CptyConfirmation.FixedRate%</td></tr>
+                                    <tr><th>Payment Freq</th><td>@Model.CptyConfirmation.PaymentFrequency</td></tr>
+                                    <tr><th>Day Count</th><td>@Model.CptyConfirmation.DayCountConvention</td></tr>
+                                    <tr><th>Maturity</th><td>@Model.CptyConfirmation.MaturityDate.ToString("yyyy-MM-dd")</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-4">
+            <a href="@Url.Action("Index", "DerivAI")" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+            </a>
+            <a href="@Url.Action("Confirmation", "DerivAI", new { tradeId = Model.TradeId })" class="btn btn-outline-primary">
+                <i class="bi bi-eye me-1"></i>View Confirmations
+            </a>
+            <a href="@Url.Action("AuditTrail", "DerivAI")" class="btn btn-outline-info">
+                <i class="bi bi-journal-text me-1"></i>View Audit Trail
+            </a>
+        </div>
+
+    </div>
+</div>

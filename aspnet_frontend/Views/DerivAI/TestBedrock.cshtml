@@ -1,0 +1,181 @@
+@model DerivAI.Web.Models.BedrockTestViewModel
+@{
+    ViewData["Title"] = "AWS Bedrock Test";
+    ViewData["Subtitle"] = "Test connectivity to Amazon Bedrock and Claude Sonnet";
+}
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        
+        <!-- Connection Status Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-cloud-check me-2"></i>Connection Status
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.IsConnected)
+                {
+                    <div class="alert alert-success mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">✓ Connected to AWS Bedrock</h6>
+                                <small class="text-muted">Last checked: @Model.Timestamp</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-x-circle-fill fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">✗ Connection Failed</h6>
+                                <small class="text-muted">@Model.ErrorMessage</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">Region</label>
+                        <div class="fw-medium">@(Model.Region ?? "Not configured")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">LLM Model</label>
+                        <div class="fw-medium">@(Model.ModelId ?? "Not configured")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">Vector Database</label>
+                        <div class="fw-medium">@(Model.VectorDatabase ?? "Not configured")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold text-uppercase mb-1">Status</label>
+                        <div>
+                            @if (Model.IsConnected)
+                            {
+                                <span class="badge bg-success">Online</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Offline</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Claude LLM Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-cpu me-2"></i>Test Claude LLM
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="TestBedrockPrompt" method="post" id="testForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="testPrompt" class="form-label">Test Prompt</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="testPrompt" 
+                               name="testPrompt"
+                               placeholder="Enter a test prompt for Claude Sonnet"
+                               value="Explain ISDA day count conventions in one sentence.">
+                        <small class="text-muted">Send a test query to Claude Sonnet via Amazon Bedrock</small>
+                    </div>
+                    <button type="submit" class="btn btn-success" id="testBtn">
+                        <i class="bi bi-play-fill me-1"></i>Test Connection
+                    </button>
+                </form>
+                <div id="testResult" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Configuration Help Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-info-circle me-2"></i>Configuration Help
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6 class="fw-semibold mb-2">Required AWS Configuration:</h6>
+                <ul class="mb-3">
+                    <li>AWS credentials configured (via AWS CLI or environment variables)</li>
+                    <li>Access to Amazon Bedrock service in your region</li>
+                    <li>Claude Sonnet model enabled in Bedrock console</li>
+                    <li>Python FastAPI agent running on localhost:8000</li>
+                </ul>
+                
+                <h6 class="fw-semibold mb-2">Troubleshooting:</h6>
+                <ul class="mb-0">
+                    <li>Verify AWS credentials: <code>aws sts get-caller-identity</code></li>
+                    <li>Check Bedrock model access in AWS Console</li>
+                    <li>Ensure Python agent is running: <code>http://localhost:8000/health</code></li>
+                    <li>Review application logs for detailed error messages</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('testForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('testBtn');
+        const result = document.getElementById('testResult');
+        const prompt = document.getElementById('testPrompt').value;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Testing...';
+        result.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split me-2"></i>Connecting to Bedrock...</div>';
+        
+        try {
+            const formData = new FormData(this);
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.response) {
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-check-circle-fill me-2"></i>Success!</h6>
+                        <p class="mb-2"><strong>Response from Claude Sonnet:</strong></p>
+                        <div class="bg-light p-3 rounded border">
+                            ${data.response}
+                        </div>
+                    </div>`;
+            } else {
+                result.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>No Response</h6>
+                        <p class="mb-0">The agent did not return a response. Check the Python service logs.</p>
+                    </div>`;
+            }
+        } catch (error) {
+            result.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-x-circle-fill me-2"></i>Request Failed</h6>
+                    <p class="mb-0"><strong>Error:</strong> ${error.message}</p>
+                    <small class="text-muted">Ensure the Python agent is running on localhost:8000</small>
+                </div>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Test Connection';
+        }
+    });
+</script>
+}

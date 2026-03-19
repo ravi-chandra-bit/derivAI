@@ -1,0 +1,212 @@
+@model DerivAI.Web.Models.ConfirmationViewModel
+@{
+    ViewData["Title"] = "Trade Confirmation";
+    ViewData["Subtitle"] = $"Viewing confirmations for {Model.TradeId}";
+}
+
+<div class="row">
+    <div class="col-12">
+        
+        <!-- Header with Trade ID -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Trade ID: <code class="text-primary">@Model.TradeId</code></h5>
+                        <small class="text-muted">Side-by-side confirmation comparison</small>
+                    </div>
+                    <div>
+                        <a href="@Url.Action("Index", "DerivAI")" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                        <form asp-action="AnalyzeBreak" method="post" class="d-inline ms-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="tradeId" value="@Model.TradeId" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-cpu-fill me-1"></i>Run AI Analysis
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side-by-Side Confirmations -->
+        <div class="row g-4">
+            
+            <!-- Our Confirmation -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bi bi-building me-2"></i>Our Confirmation
+                        </h6>
+                        <small>@Model.OurConfirmation.OurEntity</small>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr class="@(Model.HighlightedFields.Contains("notional") ? "table-danger" : "")">
+                                    <th>Notional</th>
+                                    <td>@Model.OurConfirmation.Notional.ToString("N0") @Model.OurConfirmation.Currency</td>
+                                </tr>
+                                <tr>
+                                    <th>Product</th>
+                                    <td>@Model.OurConfirmation.ProductType</td>
+                                </tr>
+                                <tr>
+                                    <th>Counterparty</th>
+                                    <td>@Model.OurConfirmation.Counterparty</td>
+                                </tr>
+                                <tr>
+                                    <th>Trade Date</th>
+                                    <td>@Model.OurConfirmation.TradeDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                                <tr>
+                                    <th>Effective Date</th>
+                                    <td>@Model.OurConfirmation.EffectiveDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("maturity_date") ? "table-danger" : "")">
+                                    <th>Maturity Date</th>
+                                    <td>@Model.OurConfirmation.MaturityDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                                <tr>
+                                    <th>Fixed Rate Payer</th>
+                                    <td>@Model.OurConfirmation.FixedRatePayer</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("fixed_rate") ? "table-danger" : "")">
+                                    <th>Fixed Rate</th>
+                                    <td>@Model.OurConfirmation.FixedRate%</td>
+                                </tr>
+                                <tr>
+                                    <th>Floating Index</th>
+                                    <td>@Model.OurConfirmation.FloatingIndex</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("payment_frequency") ? "table-danger" : "")">
+                                    <th>Payment Frequency</th>
+                                    <td>@Model.OurConfirmation.PaymentFrequency</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("day_count_convention") ? "table-danger" : "")">
+                                    <th>Day Count</th>
+                                    <td>@Model.OurConfirmation.DayCountConvention</td>
+                                </tr>
+                                <tr>
+                                    <th>Business Day Conv.</th>
+                                    <td>@Model.OurConfirmation.BusinessDayConvention</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("governing_law") ? "table-danger" : "")">
+                                    <th>Governing Law</th>
+                                    <td>@Model.OurConfirmation.GoverningLaw</td>
+                                </tr>
+                                <tr>
+                                    <th>Documentation</th>
+                                    <td>@Model.OurConfirmation.DocumentationVersion</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Counterparty Confirmation -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white py-3">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bi bi-building me-2"></i>Counterparty Confirmation
+                        </h6>
+                        <small>@Model.CounterpartyConf.OurEntity</small>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr class="@(Model.HighlightedFields.Contains("notional") ? "table-danger" : "")">
+                                    <th>Notional</th>
+                                    <td>@Model.CounterpartyConf.Notional.ToString("N0") @Model.CounterpartyConf.Currency</td>
+                                </tr>
+                                <tr>
+                                    <th>Product</th>
+                                    <td>@Model.CounterpartyConf.ProductType</td>
+                                </tr>
+                                <tr>
+                                    <th>Counterparty</th>
+                                    <td>@Model.CounterpartyConf.Counterparty</td>
+                                </tr>
+                                <tr>
+                                    <th>Trade Date</th>
+                                    <td>@Model.CounterpartyConf.TradeDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                                <tr>
+                                    <th>Effective Date</th>
+                                    <td>@Model.CounterpartyConf.EffectiveDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("maturity_date") ? "table-danger" : "")">
+                                    <th>Maturity Date</th>
+                                    <td>@Model.CounterpartyConf.MaturityDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                                <tr>
+                                    <th>Fixed Rate Payer</th>
+                                    <td>@Model.CounterpartyConf.FixedRatePayer</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("fixed_rate") ? "table-danger" : "")">
+                                    <th>Fixed Rate</th>
+                                    <td>@Model.CounterpartyConf.FixedRate%</td>
+                                </tr>
+                                <tr>
+                                    <th>Floating Index</th>
+                                    <td>@Model.CounterpartyConf.FloatingIndex</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("payment_frequency") ? "table-danger" : "")">
+                                    <th>Payment Frequency</th>
+                                    <td>@Model.CounterpartyConf.PaymentFrequency</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("day_count_convention") ? "table-danger" : "")">
+                                    <th>Day Count</th>
+                                    <td>@Model.CounterpartyConf.DayCountConvention</td>
+                                </tr>
+                                <tr>
+                                    <th>Business Day Conv.</th>
+                                    <td>@Model.CounterpartyConf.BusinessDayConvention</td>
+                                </tr>
+                                <tr class="@(Model.HighlightedFields.Contains("governing_law") ? "table-danger" : "")">
+                                    <th>Governing Law</th>
+                                    <td>@Model.CounterpartyConf.GoverningLaw</td>
+                                </tr>
+                                <tr>
+                                    <th>Documentation</th>
+                                    <td>@Model.CounterpartyConf.DocumentationVersion</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.HighlightedFields.Any())
+        {
+            <div class="alert alert-warning mt-4">
+                <h6 class="fw-bold mb-2">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Discrepancies Detected
+                </h6>
+                <p class="mb-0">
+                    The following fields do not match: 
+                    <strong>@string.Join(", ", Model.HighlightedFields)</strong>
+                </p>
+                <p class="mb-0 mt-2">
+                    <small>Click "Run AI Analysis" to get Claude Sonnet's explanation and resolution steps.</small>
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-success mt-4">
+                <h6 class="fw-bold mb-0">
+                    <i class="bi bi-check-circle-fill me-2"></i>All Fields Match
+                </h6>
+                <p class="mb-0">Both confirmations are identical.</p>
+            </div>
+        }
+
+    </div>
+</div>

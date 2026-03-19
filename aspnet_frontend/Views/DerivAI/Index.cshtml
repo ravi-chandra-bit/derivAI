@@ -1,0 +1,236 @@
+@*
+    Dashboard View — Operations Dashboard
+    ======================================
+    Displays KPI cards, pending reviews table, and real-time stats.
+    Uses Bootstrap 5 cards, tables, and badges.
+*@
+@model DerivAI.Web.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Operations Dashboard";
+    ViewData["Subtitle"] = "AI-powered trade confirmation matching and reconciliation";
+}
+
+<!-- ═══ KPI Cards Row ═══ -->
+<div class="row g-4 mb-4">
+    <!-- Total Trades -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-muted small fw-semibold text-uppercase">Total Trades</span>
+                    <div class="bg-primary bg-opacity-10 rounded-3 p-2">
+                        <i class="bi bi-graph-up text-primary fs-5"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1" id="stat-total">@Model.TotalTrades</h2>
+                <small class="text-muted">Active in system</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Breaks -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-muted small fw-semibold text-uppercase">Active Breaks</span>
+                    <div class="bg-danger bg-opacity-10 rounded-3 p-2">
+                        <i class="bi bi-exclamation-triangle text-danger fs-5"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold text-danger mb-1" id="stat-breaks">@Model.TotalBreaks</h2>
+                <small class="text-muted">Requiring investigation</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matched Trades -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-muted small fw-semibold text-uppercase">Matched</span>
+                    <div class="bg-success bg-opacity-10 rounded-3 p-2">
+                        <i class="bi bi-check-circle text-success fs-5"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold text-success mb-1" id="stat-matched">@Model.TotalMatched</h2>
+                <small class="text-muted">Successfully reconciled</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Model Info -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-muted small fw-semibold text-uppercase">AI Model</span>
+                    <div class="bg-info bg-opacity-10 rounded-3 p-2">
+                        <i class="bi bi-cpu text-info fs-5"></i>
+                    </div>
+                </div>
+                <h6 class="fw-bold mb-1">Claude Sonnet</h6>
+                <small class="text-muted">via Amazon Bedrock</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Trade Confirmations Table ═══ -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <div>
+            <h5 class="mb-0 fw-bold">Trade Confirmations</h5>
+            <small class="text-muted">AI-processed matches awaiting analyst review</small>
+        </div>
+        <a href="@Url.Action("AuditTrail", "DerivAI")" class="btn btn-sm btn-outline-success">
+            View audit trail <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Trade ID</th>
+                    <th>Product</th>
+                    <th>Counterparty</th>
+                    <th class="text-end">Notional</th>
+                    <th>CCY</th>
+                    <th>Trade Date</th>
+                    <th>Status</th>
+                    <th>Breaks</th>
+                    <th class="text-end pe-4">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.SampleTrades.Any())
+                {
+                    @foreach (var trade in Model.SampleTrades)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <code class="text-dark fw-medium">@trade.TradeId</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    @trade.ProductType
+                                </span>
+                            </td>
+                            <td>@trade.Counterparty</td>
+                            <td class="text-end fw-semibold">@trade.Notional.ToString("N0")</td>
+                            <td>@trade.Currency</td>
+                            <td>@trade.TradeDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @if (trade.Status == "Break")
+                                {
+                                    <span class="badge bg-danger rounded-pill px-3">
+                                        <i class="bi bi-x-circle-fill me-1"></i>BREAK
+                                    </span>
+                                }
+                                else if (trade.Status == "Matched")
+                                {
+                                    <span class="badge bg-success rounded-pill px-3">
+                                        <i class="bi bi-check-circle-fill me-1"></i>MATCHED
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning rounded-pill px-3">PENDING</span>
+                                }
+                            </td>
+                            <td>
+                                @if (trade.BreakCount > 0)
+                                {
+                                    <span class="badge bg-danger rounded-pill">@trade.BreakCount</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success"><i class="bi bi-check-lg"></i></span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="@Url.Action("Confirmation", "DerivAI", new { tradeId = trade.TradeId })"
+                                   class="btn btn-sm btn-outline-secondary me-1">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                @if (trade.Status == "Break")
+                                {
+                                    <form asp-action="AnalyzeBreak" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="tradeId" value="@trade.TradeId" />
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="bi bi-cpu-fill"></i> AI Analyze
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                            <strong>No trades found</strong>
+                            <br />
+                            <small>Upload confirmations to get started.</small>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ Recent Audit Trail ═══ -->
+@if (Model.RecentAuditEntries.Any())
+{
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <div>
+                <h5 class="mb-0 fw-bold">Recent Audit Trail</h5>
+                <small class="text-muted">Latest AI analysis activities</small>
+            </div>
+            <a href="@Url.Action("AuditTrail", "DerivAI")" class="btn btn-sm btn-outline-success">
+                View all <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <div class="card-body">
+            @foreach (var entry in Model.RecentAuditEntries)
+            {
+                <div class="d-flex align-items-start border-bottom py-2">
+                    <span class="@entry.SeverityBadgeClass me-2">@entry.Severity</span>
+                    <div>
+                        <div class="fw-semibold small">@entry.TradeId — @entry.Action</div>
+                        <div class="text-muted small">@entry.Details</div>
+                    </div>
+                    <span class="ms-auto text-muted small">@entry.Timestamp.ToString("HH:mm:ss")</span>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+    // ═══════════════════════════════════════════════════════════════
+    // Dashboard Auto-Refresh
+    // ═══════════════════════════════════════════════════════════════
+    // Polls the stats every 30 seconds to update KPI cards
+    
+    async function refreshStats() {
+        try {
+            // In a real implementation, this would call an API endpoint
+            // For now, we'll just reload the page
+            setTimeout(() => location.reload(), 30000);
+        } catch (err) {
+            console.warn('Stats refresh failed:', err);
+        }
+    }
+
+    // Poll every 30 seconds
+    setTimeout(refreshStats, 30000);
+</script>
+}

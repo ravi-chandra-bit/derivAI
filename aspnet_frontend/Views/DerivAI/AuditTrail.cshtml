@@ -1,0 +1,113 @@
+@model DerivAI.Web.Models.AuditTrailViewModel
+@{
+    ViewData["Title"] = "Audit Trail";
+    ViewData["Subtitle"] = "Complete history of AI analysis activities";
+}
+
+<div class="row">
+    <div class="col-12">
+        
+        <!-- Filters Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" asp-action="AuditTrail" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="tradeId" class="form-label">Trade ID</label>
+                        <input type="text" class="form-control" id="tradeId" name="tradeId" 
+                               value="@Model.FilterTradeId" placeholder="TRADE-001">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="severity" class="form-label">Severity</label>
+                        <select class="form-select" id="severity" name="severity">
+                            <option value="">All</option>
+                            <option value="Critical" selected="@(Model.FilterSeverity == "Critical")">Critical</option>
+                            <option value="High" selected="@(Model.FilterSeverity == "High")">High</option>
+                            <option value="Medium" selected="@(Model.FilterSeverity == "Medium")">Medium</option>
+                            <option value="Low" selected="@(Model.FilterSeverity == "Low")">Low</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="fromDate" class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="fromDate" name="fromDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="toDate" class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="toDate" name="toDate">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-funnel me-1"></i>Apply Filters
+                        </button>
+                        <a href="@Url.Action("AuditTrail", "DerivAI")" class="btn btn-outline-secondary">
+                            Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Audit Entries Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-journal-text me-2"></i>Audit Entries
+                </h5>
+                <small class="text-muted">@Model.Entries.Count entries found</small>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Trade ID</th>
+                            <th>Action</th>
+                            <th>Severity</th>
+                            <th>Performed By</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Entries.Any())
+                        {
+                            @foreach (var entry in Model.Entries)
+                            {
+                                <tr>
+                                    <td>
+                                        <small class="text-muted font-monospace">
+                                            @entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <code class="text-primary">@entry.TradeId</code>
+                                    </td>
+                                    <td>@entry.Action</td>
+                                    <td>
+                                        <span class="@entry.SeverityBadgeClass">@entry.Severity</span>
+                                    </td>
+                                    <td>
+                                        <small>@entry.PerformedBy</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@entry.Details</small>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                    <strong>No audit entries found</strong>
+                                    <br />
+                                    <small>Run an AI analysis to generate audit entries.</small>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
