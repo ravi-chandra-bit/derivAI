@@ -2,7 +2,7 @@
 
 An intelligent trade confirmation matching system that uses Amazon Bedrock (Claude), LangGraph, and RAG to automatically detect, explain, and resolve discrepancies in OTC derivatives trade confirmations.
 
-## 🎯 Overview
+##  Overview
 
 DerivAI automates the manual, error-prone process of reconciling trade confirmations between counterparties in derivatives trading. The system:
 
@@ -11,7 +11,7 @@ DerivAI automates the manual, error-prone process of reconciling trade confirmat
 - **Recommends** resolution actions based on market conventions and regulatory requirements
 - **Audits** all analysis activities for compliance and operational review
 
-## 🏗️ Architecture
+## Architecture
 
 ### System Components
 
@@ -61,7 +61,7 @@ DerivAI automates the manual, error-prone process of reconciling trade confirmat
 - OpenSearch Serverless (RAG vector store)
 - DynamoDB (audit trail)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -130,7 +130,7 @@ dotnet run
 
 Open your browser to: `https://localhost:5001`
 
-## 📋 AWS Setup
+## AWS Setup
 
 ### 1. Amazon Bedrock
 
@@ -189,9 +189,9 @@ AGENT_API_PORT=8000
 }
 ```
 
-## 🌐 Production Deployment
+## Production Deployment
 
-### Option 1: AWS ECS Fargate (Recommended)
+### Option 1: AWS ECS Fargate 
 
 **Python Backend:**
 ```bash
@@ -252,7 +252,7 @@ az webapp up --name derivai-web --runtime "DOTNETCORE:8.0"
 az webapp up --name derivai-agent --runtime "PYTHON:3.11"
 ```
 
-## 💰 Cost Estimation (Production)
+## Cost Estimation (Production)
 
 ### Monthly Costs (1000 trades/day)
 
@@ -327,7 +327,7 @@ dotnet test
 }
 ```
 
-## 🔒 Security Considerations
+## Security Considerations
 
 - AWS credentials managed via IAM roles (no hardcoded keys)
 - HTTPS enforced in production
@@ -336,7 +336,7 @@ dotnet test
 - Audit trail for all AI analysis activities
 - No PII stored in logs or audit records
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 
@@ -348,12 +348,12 @@ Contributions welcome! Please:
 
 MIT License - see LICENSE file for details
 
-## 🆘 Support
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/DerivAI/issues)
 - **Documentation**: [Wiki](https://github.com/yourusername/DerivAI/wiki)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with Amazon Bedrock and Claude 3
 - LangChain & LangGraph for agent orchestration
